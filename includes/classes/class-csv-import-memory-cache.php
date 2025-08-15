@@ -737,15 +737,17 @@ class CSV_Import_Cache_Admin {
     }
     
     public static function add_cache_admin_page() {
-        add_submenu_page(
-            'tools.php',
-            'CSV Import Cache',
-            'CSV Cache',
-            'manage_options',
-            'csv-import-cache',
-            [__CLASS__, 'render_cache_page']
-        );
-    }
+    /*
+    add_submenu_page(
+        'tools.php',
+        'CSV Import Cache',
+        'CSV Cache',
+        'manage_options',
+        'csv-import-cache',
+        [__CLASS__, 'render_cache_page']
+    );
+    */
+}
     
     public static function render_cache_page() {
         $cache_status = CSV_Import_Memory_Cache::get_cache_status();
