@@ -609,6 +609,45 @@ function csv_import_analyze_csv_content( string $csv_content, string $source_nam
     return $result;
 }
 
+// Beispieldaten sammeln (erste 3 Datenzeilen)
+    $sample_data = [];
+    for ( $i = 1; $i <= min( 4, count( $lines ) - 1 ); $i++ ) {
+        if ( ! empty( trim( $lines[ $i ] ) ) ) {
+            $row_data = str_getcsv( $lines[ $i ], $actual_delimiter );
+            $row_data = array_map( 'trim', $row_data );
+            $sample_data[] = array_slice( $row_data, 0, min( 5, count( $headers ) ) ); // Nur erste 5 Spalten
+        }
+    }
+    
+    $total_rows = count( $lines ) - 1; // Minus Header-Zeile
+    $non_empty_rows = 0;
+    for ( $i = 1; $i < count( $lines ); $i++ ) {
+        if ( ! empty( trim( $lines[ $i ] ) ) ) {
+            $non_empty_rows++;
+        }
+    }
+    
+    $message = "✅ {$source_name} CSV erfolgreich validiert!<br>" .
+               "<strong>Gesamtzeilen:</strong> {$total_rows}<br>" .
+               "<strong>Datenzeilen:</strong> {$non_empty_rows}<br>" .
+               "<strong>Spalten:</strong> " . count( $headers ) . "<br>" .
+               "<strong>Delimiter:</strong> " . ($delimiter === '\t' ? 'Tab' : $delimiter) . "<br>" .
+               "<strong>Header:</strong> " . implode( ', ', array_slice( $headers, 0, 5 ) ) . 
+               ( count( $headers ) > 5 ? ' ... (und ' . (count( $headers ) - 5) . ' weitere)' : '' );
+    
+    $result = [
+        'valid' => true,
+        'message' => $message,
+        'rows' => $non_empty_rows,
+        'total_rows' => $total_rows,
+        'columns' => $headers,
+        'sample_data' => $sample_data,
+        'delimiter' => $delimiter
+    ];
+    
+    return $result;
+}
+
 // ===================================================================
 // CSV VERARBEITUNGSFUNKTIONEN
 // ===================================================================
@@ -2395,10 +2434,6 @@ function csv_import_check_scheduler_dependencies(): array {
     
     return $summary;
 }
-
-// ===================================================================
-// ENDE DER NEUEN SCHEDULER-AKTIVIERUNGSFUNKTIONEN
-// ===================================================================
 
 
 csv_import_log( 'debug', 'CSV Import Pro Core Functions geladen - Version 5.2 (Dashboard Widget bereinigt)' );
