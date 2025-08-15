@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * Erstellt die Admin-Menüs und steuert die Anzeige der Plugin-Seiten.
- * Version 8.4 - Korrigierte Top-Level-Menü-Integration
+ * Version 8.5 - Korrigierte Top-Level-Menü-Integration
  * @since 6.0
  */
 class CSV_Import_Pro_Admin {
@@ -32,104 +32,109 @@ class CSV_Import_Pro_Admin {
 	}
 
     public function register_admin_menu() {
-        // Schritt 1: Den neuen Top-Level-Menüpunkt erstellen
+        // Schritt 1: Den neuen Top-Level-Menüpunkt erstellen.
+        // KORREKTUR: Der Klick auf den Hauptmenüpunkt führt zur Einstellungsseite, wie gewünscht.
         add_menu_page(
-            __( 'CSV Importer Pro', 'csv-import' ), // Seitentitel
-            __( 'CSV Importer Pro', 'csv-import' ), // Menütitel
-            'edit_pages',                           // Berechtigung
-            $this->menu_slug,                       // Menü-Slug ('csv-import')
-            [ $this, 'display_main_page' ],         // Standard-Callback, der auf die Hauptseite zeigt
-            'dashicons-database-import',            // Icon
-            25                                      // Position (knapp unter "Kommentare")
+            __( 'CSV Importer Pro', 'csv-import' ),
+            __( 'CSV Importer Pro', 'csv-import' ),
+            'edit_pages',
+            'csv-import-settings', // Slug der ersten Seite
+            [ $this, 'display_settings_page' ],
+            'dashicons-database-import',
+            25
         );
 
         // Schritt 2: Alle Untermenüs in der gewünschten Reihenfolge definieren
         $submenus = [
-            'main' => [
-                'page_title' => __( 'CSV Import Dashboard', 'csv-import' ),
-                'menu_title' => __( 'CSV Import', 'csv-import' ), // Dieser Link wird als erster unter dem Hauptmenü erscheinen
-                'capability' => 'edit_pages',
-                'menu_slug'  => $this->menu_slug, // Der Haupt-Slug, damit er als Dashboard fungiert
-                'callback'   => [ $this, 'display_main_page' ]
-            ],
             'settings' => [
-                'page_title' => __( 'CSV Import Einstellungen', 'csv-import' ),
-                'menu_title' => __( 'Einstellungen', 'csv-import' ),
-                'capability' => 'edit_pages',
-                'menu_slug'  => 'csv-import-settings',
-                'callback'   => [ $this, 'display_settings_page' ]
+                'parent_slug' => 'csv-import-settings', // Parent ist die erste Seite
+                'page_title'  => __( 'CSV Import Einstellungen', 'csv-import' ),
+                'menu_title'  => __( 'Einstellungen', 'csv-import' ),
+                'capability'  => 'edit_pages',
+                'menu_slug'   => 'csv-import-settings',
+                'callback'    => [ $this, 'display_settings_page' ]
+            ],
+            'main' => [
+                'parent_slug' => 'csv-import-settings',
+                'page_title'  => __( 'CSV Import Dashboard', 'csv-import' ),
+                'menu_title'  => __( 'CSV Import', 'csv-import' ),
+                'capability'  => 'edit_pages',
+                'menu_slug'   => 'csv-import', // Eigener Slug
+                'callback'    => [ $this, 'display_main_page' ]
             ],
             'seo_preview' => [
-                'page_title' => __( 'CSV Import SEO-Vorschau', 'csv-import' ),
-                'menu_title' => __( 'SEO-Vorschau', 'csv-import' ),
-                'capability' => 'edit_pages',
-                'menu_slug'  => 'csv-import-seo-preview',
-                'callback'   => [ $this, 'display_seo_preview_page' ]
+                'parent_slug' => 'csv-import-settings',
+                'page_title'  => __( 'CSV Import SEO-Vorschau', 'csv-import' ),
+                'menu_title'  => __( 'SEO-Vorschau', 'csv-import' ),
+                'capability'  => 'edit_pages',
+                'menu_slug'   => 'csv-import-seo-preview',
+                'callback'    => [ $this, 'display_seo_preview_page' ]
             ],
             'scheduling' => [
-                'page_title' => __( 'CSV Import Automatisierung', 'csv-import' ),
-                'menu_title' => __( 'Automatisierung', 'csv-import' ),
-                'capability' => 'manage_options',
-                'menu_slug'  => 'csv-import-scheduling',
-                'callback'   => [ $this, 'display_scheduling_page' ]
+                'parent_slug' => 'csv-import-settings',
+                'page_title'  => __( 'CSV Import Automatisierung', 'csv-import' ),
+                'menu_title'  => __( 'Automatisierung', 'csv-import' ),
+                'capability'  => 'manage_options',
+                'menu_slug'   => 'csv-import-scheduling',
+                'callback'    => [ $this, 'display_scheduling_page' ]
             ],
             'debug' => [
-                'page_title' => __( 'CSV Import Debug', 'csv-import' ),
-                'menu_title' => __( 'Debug', 'csv-import' ),
-                'capability' => 'manage_options',
-                'menu_slug'  => 'csv-import-debug',
-                'callback'   => 'csv_import_debug_page' // Globale Funktion
+                'parent_slug' => 'csv-import-settings',
+                'page_title'  => __( 'CSV Import Debug', 'csv-import' ),
+                'menu_title'  => __( 'Debug', 'csv-import' ),
+                'capability'  => 'manage_options',
+                'menu_slug'   => 'csv-import-debug',
+                'callback'    => 'csv_import_debug_page' // Globale Funktion
             ],
             'backups' => [
-                'page_title' => __( 'CSV Import Backups', 'csv-import' ),
-                'menu_title' => __( 'Backups & Rollback', 'csv-import' ),
-                'capability' => 'edit_pages',
-                'menu_slug'  => 'csv-import-backups',
-                'callback'   => [ $this, 'display_backup_page' ]
+                'parent_slug' => 'csv-import-settings',
+                'page_title'  => __( 'CSV Import Backups', 'csv-import' ),
+                'menu_title'  => __( 'Backups & Rollback', 'csv-import' ),
+                'capability'  => 'edit_pages',
+                'menu_slug'   => 'csv-import-backups',
+                'callback'    => [ $this, 'display_backup_page' ]
             ],
             'profiles' => [
-                'page_title' => __( 'CSV Import Profile', 'csv-import' ),
-                'menu_title' => __( 'Import-Profile', 'csv-import' ),
-                'capability' => 'edit_pages',
-                'menu_slug'  => 'csv-import-profiles',
-                'callback'   => [ $this, 'display_profiles_page' ]
+                'parent_slug' => 'csv-import-settings',
+                'page_title'  => __( 'CSV Import Profile', 'csv-import' ),
+                'menu_title'  => __( 'Import-Profile', 'csv-import' ),
+                'capability'  => 'edit_pages',
+                'menu_slug'   => 'csv-import-profiles',
+                'callback'    => [ $this, 'display_profiles_page' ]
             ],
             'logs' => [
-                'page_title' => __( 'CSV Import Logs', 'csv-import' ),
-                'menu_title' => __( 'Logs & Monitoring', 'csv-import' ),
-                'capability' => 'edit_pages',
-                'menu_slug'  => 'csv-import-logs',
-                'callback'   => [ $this, 'display_logs_page' ]
+                'parent_slug' => 'csv-import-settings',
+                'page_title'  => __( 'CSV Import Logs', 'csv-import' ),
+                'menu_title'  => __( 'Logs & Monitoring', 'csv-import' ),
+                'capability'  => 'edit_pages',
+                'menu_slug'   => 'csv-import-logs',
+                'callback'    => [ $this, 'display_logs_page' ]
             ],
             'cache' => [
-                'page_title' => __( 'CSV Import Cache', 'csv-import' ),
-                'menu_title' => __( 'CSV Cache', 'csv-import' ),
-                'capability' => 'manage_options',
-                'menu_slug'  => 'csv-import-cache',
-                'callback'   => [ 'CSV_Import_Cache_Admin', 'render_cache_page' ] // Statische Klassenmethode
+                'parent_slug' => 'csv-import-settings',
+                'page_title'  => __( 'CSV Import Cache', 'csv-import' ),
+                'menu_title'  => __( 'CSV Cache', 'csv-import' ),
+                'capability'  => 'manage_options',
+                'menu_slug'   => 'csv-import-cache',
+                'callback'    => [ 'CSV_Import_Cache_Admin', 'render_cache_page' ]
             ],
         ];
 
         // Schritt 3: Die Untermenüs erstellen
         foreach ( $submenus as $key => $submenu ) {
-            $submenu_hook = add_submenu_page(
-                $this->menu_slug,
+            $this->admin_pages[$key] = add_submenu_page(
+                $submenu['parent_slug'],
                 $submenu['page_title'],
                 $submenu['menu_title'],
                 $submenu['capability'],
                 $submenu['menu_slug'],
                 $submenu['callback']
             );
-            $this->admin_pages[$key] = $submenu_hook;
         }
-
-        // Schritt 4: Den von WordPress automatisch erstellten, doppelten Menüpunkt entfernen
-        remove_submenu_page($this->menu_slug, $this->menu_slug);
     }
 
-    // Die Callback-Funktionen für die Seiten (display_... und render_page)
-    // bleiben hier unverändert. Ich füge sie der Vollständigkeit halber hinzu.
-    
+    // --- Ab hier bleiben alle anderen Funktionen der Klasse unverändert ---
+
     public function display_main_page() { $this->render_page('page-main.php'); }
     public function display_settings_page() { $this->render_page('page-settings.php'); }
     public function display_backup_page() { $this->render_page('page-backups.php'); }
@@ -137,10 +142,10 @@ class CSV_Import_Pro_Admin {
     public function display_scheduling_page() { $this->render_page('page-scheduling.php'); }
     public function display_logs_page() { $this->render_page('page-logs.php'); }
     public function display_seo_preview_page() { $this->render_page('page-seo-preview.php'); }
-    // Dummy-Callbacks, damit die Klasse vollständig ist
-    public function display_debug_page() {}
-    public function display_cache_page() {}
 
+    // Dummy-Callbacks, damit die Klasse vollständig ist und keine Fehler wirft
+    public function display_debug_page() { if (function_exists('csv_import_debug_page')) { csv_import_debug_page(); } }
+    public function display_cache_page() { if (class_exists('CSV_Import_Cache_Admin') && method_exists('CSV_Import_Cache_Admin', 'render_cache_page')) { CSV_Import_Cache_Admin::render_cache_page(); } }
 
     private function render_page($template_file) {
         $data = [];
@@ -149,16 +154,17 @@ class CSV_Import_Pro_Admin {
         if (function_exists('csv_import_system_health_check')) { $data['health'] = csv_import_system_health_check(); }
         if (function_exists('csv_import_get_stats')) { $data['stats'] = csv_import_get_stats(); }
         if (function_exists('csv_import_get_error_stats')) { $data['error_stats'] = csv_import_get_error_stats(); }
-        if (class_exists('CSV_Import_SEO_Preview')) { if ($template_file === 'page-seo-preview.php') { $data['seo_preview_data'] = $this->prepare_seo_preview_data(); } if (function_exists('csv_import_get_last_parsed_data')) { $data['csv_sample_data'] = csv_import_get_last_parsed_data(); } $data['seo_plugin_compatibility'] = $this->check_seo_plugin_compatibility(); }
-        if (class_exists('CSV_Import_Scheduler')) { if (method_exists('CSV_Import_Scheduler', 'get_scheduler_info')) { $scheduler_info = CSV_Import_Scheduler::get_scheduler_info(); $data = array_merge($data, $scheduler_info); $data['is_scheduled'] = $scheduler_info['is_scheduled'] ?? false; $data['current_source'] = get_option('csv_import_scheduled_source', ''); $data['current_frequency'] = get_option('csv_import_scheduled_frequency', ''); $data['next_scheduled'] = $scheduler_info['next_run'] ?? false; $data['available_intervals'] = $scheduler_info['available_intervals'] ?? []; $data['wp_cron_disabled'] = $scheduler_info['wp_cron_disabled'] ?? false; } if (isset($data['config']) && function_exists('csv_import_validate_config')) { $validation = csv_import_validate_config($data['config']); $data['validation'] = $validation; } $data['notification_settings'] = get_option('csv_import_notification_settings', [ 'email_on_success' => false, 'email_on_failure' => true, 'recipients' => [get_option('admin_email')] ]); if (class_exists('CSV_Import_Error_Handler') && method_exists('CSV_Import_Error_Handler', 'get_persistent_errors')) { $all_logs = CSV_Import_Error_Handler::get_persistent_errors(); $data['scheduled_imports'] = array_filter($all_logs, function($log) { if (!is_array($log) || !isset($log['message'])) { return false; } return stripos($log['message'], 'geplant') !== false || stripos($log['message'], 'scheduled') !== false || stripos($log['message'], 'automatisch') !== false; }); usort($data['scheduled_imports'], function($a, $b) { return strtotime($b['time'] ?? '1970-01-01') - strtotime($a['time'] ?? '1970-01-01'); }); $data['scheduled_imports'] = array_slice($data['scheduled_imports'], 0, 20); } else { $data['scheduled_imports'] = []; } }
+        if (class_exists('CSV_Import_Scheduler') && method_exists('CSV_Import_Scheduler', 'get_scheduler_info')) { $scheduler_info = CSV_Import_Scheduler::get_scheduler_info(); $data = array_merge($data, $scheduler_info); $data['validation'] = csv_import_validate_config($config); }
         if (class_exists('CSV_Import_Backup_Manager') && method_exists('CSV_Import_Backup_Manager', 'get_import_sessions')) { $data['sessions'] = CSV_Import_Backup_Manager::get_import_sessions(); }
         if (class_exists('CSV_Import_Profile_Manager') && method_exists('CSV_Import_Profile_Manager', 'get_profiles')) { $data['profiles'] = CSV_Import_Profile_Manager::get_profiles(); }
         if (class_exists('CSV_Import_Error_Handler') && method_exists('CSV_Import_Error_Handler', 'get_persistent_errors')) { $all_logs = CSV_Import_Error_Handler::get_persistent_errors(); $filter_level = isset($_GET['level']) ? sanitize_key($_GET['level']) : 'all'; if ($filter_level !== 'all') { $filtered_logs = array_filter($all_logs, function($log) use ($filter_level) { return isset($log['level']) && $log['level'] === $filter_level; }); } else { $filtered_logs = $all_logs; } $page = isset($_GET['paged']) ? max(1, intval($_GET['paged'])) : 1; $per_page = 50; $total_logs = count($filtered_logs); $total_pages = ceil($total_logs / $per_page); $offset = ($page - 1) * $per_page; $data['logs'] = array_slice($filtered_logs, $offset, $per_page); $data['filter_level'] = $filter_level; $data['page'] = $page; $data['total_pages'] = $total_pages; $data['total_logs'] = $total_logs; }
-        if ($template_file === 'page-scheduling.php' && $_SERVER['REQUEST_METHOD'] === 'POST') { $data = array_merge($data, $this->handle_scheduling_form()); }
-        if ($template_file === 'page-backups.php' && $_SERVER['REQUEST_METHOD'] === 'POST') { $data = array_merge($data, $this->handle_backup_form()); }
-        if ($template_file === 'page-profiles.php' && $_SERVER['REQUEST_METHOD'] === 'POST') { $data = array_merge($data, $this->handle_profile_form()); }
-        if ($template_file === 'page-logs.php' && $_SERVER['REQUEST_METHOD'] === 'POST') { $data = array_merge($data, $this->handle_logs_form()); }
-        if ($template_file === 'page-seo-preview.php' && $_SERVER['REQUEST_METHOD'] === 'POST') { $data = array_merge($data, $this->handle_seo_preview_form()); }
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if ($template_file === 'page-scheduling.php') { $data = array_merge($data, $this->handle_scheduling_form()); }
+            if ($template_file === 'page-backups.php') { $data = array_merge($data, $this->handle_backup_form()); }
+            if ($template_file === 'page-profiles.php') { $data = array_merge($data, $this->handle_profile_form()); }
+            if ($template_file === 'page-logs.php') { $data = array_merge($data, $this->handle_logs_form()); }
+            if ($template_file === 'page-seo-preview.php') { $data = array_merge($data, $this->handle_seo_preview_form()); }
+        }
         
         extract($data);
         $template_path = CSV_IMPORT_PRO_PATH . 'includes/admin/views/' . $template_file;
@@ -168,7 +174,6 @@ class CSV_Import_Pro_Admin {
             echo '<div class="wrap"><h2>Template-Datei nicht gefunden</h2><p>Die Datei ' . esc_html($template_file) . ' konnte nicht geladen werden.</p></div>';
         }
     }
-
     private function prepare_seo_preview_data() {
         $seo_data = [ 'available_templates' => [], 'sample_data' => [], 'seo_fields_mapping' => [] ];
         if (function_exists('csv_import_get_config')) { $config = csv_import_get_config(); $seo_data['current_template'] = $config['template_id'] ?? ''; $seo_data['post_type'] = $config['post_type'] ?? 'post'; }
