@@ -35,8 +35,6 @@ window.csvImportCheckHandlers = function() {
     }
 };
 
-(function($) {
-    'use strict';
 
     const CSVImportAdmin = {
         // Version und Konfiguration
