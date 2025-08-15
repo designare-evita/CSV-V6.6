@@ -1592,7 +1592,7 @@ window.csvImportCheckHandlers = function() {
     /**
      * Validierungsergebnis verarbeiten (erweitert für Mapping)
      */
-   handleValidationResult: function(response, type) {
+   CSVImportAdmin.handleValidationResult = function(response, type) {
     if (!response) {
         this.showTestResult('Keine Antwort vom Server erhalten', false);
         return;
