@@ -385,33 +385,40 @@ class CSV_Import_Pro_Admin {
      * Fügt SEO-Vorschau zu CSV-Validierungsergebnissen hinzu
      * @since 8.3
      */
-    public function add_seo_preview_to_validation($csv_data) {
-        if (empty($csv_data['data']) || !class_exists('CSV_Import_SEO_Preview')) {
-            return;
-        }
-
-        // Erste Zeile für Preview verwenden
-        $sample_row = $csv_data['data'][0] ?? [];
-        
-        if (empty($sample_row)) {
-            return;
-        }
-
-        echo '<div class="csv-seo-integration" style="margin-top: 20px; padding: 15px; background: #f9f9f9; border-left: 4px solid #0073aa;">';
-        echo '<h4 style="margin-top: 0; color: #0073aa;">🔍 SEO-Vorschau basierend auf Ihren CSV-Daten:</h4>';
-        
-        // SEO-Vorschau-Widget rendern
-        if (method_exists('CSV_Import_SEO_Preview', 'render_preview_widget')) {
-            CSV_Import_SEO_Preview::render_preview_widget($sample_row);
-        } else {
-            // Fallback für einfache Vorschau
-            $this->render_simple_seo_preview($sample_row);
-        }
-        
-        echo '<p style="margin-bottom: 0; font-style: italic; color: #666;">💡 Diese Vorschau basiert auf der ersten Zeile Ihrer CSV-Daten. Für detailliertere SEO-Einstellungen besuchen Sie die <a href="' . admin_url('tools.php?page=csv-import-seo-preview') . '">SEO-Vorschau-Seite</a>.</p>';
-        echo '</div>';
+   public function add_seo_preview_to_validation($csv_data) {
+    if (empty($csv_data['data']) || !class_exists('CSV_Import_SEO_Preview')) {
+        return;
     }
 
+    // Erste Zeile für Preview verwenden
+    $sample_row = $csv_data['data'][0] ?? [];
+
+    if (empty($sample_row)) {
+        return;
+    }
+
+    // Daten für die Vorschau vorbereiten
+    $preview_data = [];
+    $mapping = get_option('csv_import_seo_field_mapping', []);
+
+    $preview_data['seo_title'] = !empty($mapping['title']) && isset($sample_row[$mapping['title']])
+        ? $sample_row[$mapping['title']]
+        : ($sample_row['post_title'] ?? $sample_row['title'] ?? '');
+
+    $preview_data['seo_description'] = !empty($mapping['description']) && isset($sample_row[$mapping['description']])
+        ? $sample_row[$mapping['description']]
+        : ($sample_row['post_excerpt'] ?? $sample_row['excerpt'] ?? '');
+
+
+    echo '<div class="csv-seo-integration" style="margin-top: 20px; padding: 15px; background: #f9f9f9; border-left: 4px solid #0073aa;">';
+    echo '<h4 style="margin-top: 0; color: #0073aa;">🔍 SEO-Vorschau basierend auf Ihren CSV-Daten:</h4>';
+
+    // SEO-Vorschau-Widget mit den Daten aus der CSV rendern
+    CSV_Import_SEO_Preview::render_preview_widget($preview_data);
+
+    echo '<p style="margin-bottom: 0; font-style: italic; color: #666;">💡 Diese Vorschau basiert auf der ersten Zeile Ihrer CSV-Daten. Für detailliertere SEO-Einstellungen besuchen Sie die <a href="' . admin_url('tools.php?page=csv-import-seo-preview') . '">SEO-Vorschau-Seite</a>.</p>';
+    echo '</div>';
+}
     /**
      * Rendert einfache SEO-Vorschau als Fallback
      * @since 8.3
