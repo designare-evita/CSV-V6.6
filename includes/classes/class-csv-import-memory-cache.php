@@ -1105,6 +1105,4 @@ if (defined('WP_DEBUG') && WP_DEBUG) {
 
 if (function_exists('csv_import_log')) {
     csv_import_log('debug', 'CSV Import Memory Cache System vollständig geladen - MEMORY SAFE EDITION!');
-}
-
-?>
+} 
