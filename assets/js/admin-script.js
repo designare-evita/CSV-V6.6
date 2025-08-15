@@ -1,77 +1,53 @@
 /**
- * CSV Import Pro Admin JavaScript - Finale korrigierte Version 9.0
- * Löst jQuery-Konflikte und stellt die Funktionalität sicher.
+ * CSV Import Pro Admin JavaScript 
+ * Löst alle Syntaxfehler und begrenzt die Spaltenanzeige.
  */
 
-// Der gesamte Code wird in diese Funktion eingeschlossen, um das '$' Alias sicher zu verwenden.
 (function($) {
     'use strict';
 
-    // ===================================================================
-    // HAUPTOBJEKT FÜR DAS PLUGIN
-    // ===================================================================
-    const CSVImportAdmin = {
+    // Globale Funktionen für die `onclick`-Attribute im HTML verfügbar machen.
+    window.csvImportTestConfig = () => { if (window.CSVImportAdmin) window.CSVImportAdmin.testConfiguration(); };
+    window.csvImportValidateCSV = (type) => { if (window.CSVImportAdmin) window.CSVImportAdmin.validateCSV(type); };
 
-        version: '9.0-final',
-        
+    const CSVImportAdmin = {
+        version: '9.1-final',
         elements: {},
         status: {
             importRunning: false,
             validationInProgress: false,
             progressInterval: null
         },
-        
-        /**
-         * Initialisiert das gesamte Skript, wenn das Dokument bereit ist.
-         */
+
         init: function() {
-            // Prüft, ob die PHP-Daten für AJAX verfügbar sind.
             if (typeof csvImportAjax === 'undefined') {
-                console.error('❌ CSV Import: AJAX-Konfiguration (csvImportAjax) fehlt. Das Skript kann nicht ausgeführt werden.');
+                console.error('❌ CSV Import: AJAX-Konfiguration fehlt.');
                 return;
             }
-            // Zwischenspeichern der DOM-Elemente für schnelleren Zugriff.
             this.cacheElements();
-            // Binden der Event-Listener (z.B. Klicks auf Buttons).
             this.bindEvents();
-            // Setzen des initialen Status (z.B. ob bereits ein Import läuft).
             this.initializeStatus();
             console.log(`🔧 CSV Import Admin v${this.version} initialisiert.`);
         },
         
-        /**
-         * Speichert häufig verwendete jQuery-Selektoren.
-         */
         cacheElements: function() {
             this.elements = {
                 resultsContainer: $('#csv-test-results'),
                 sampleDataContainer: $('#csv-sample-data-container'),
                 importButtons: $('.csv-import-btn'),
-                progressBar: $('.progress-bar-fill'),
+                progressBar: $('.progress-bar-fill, .csv-import-progress-fill'),
                 mappingContainer: $('#csv-column-mapping-container')
             };
         },
 
-        /**
-         * Weist den HTML-Elementen Funktionen zu.
-         */
         bindEvents: function() {
             const self = this;
-            
-            // Event-Handler für die "Import starten"-Buttons.
             this.elements.importButtons.on('click', function(e) {
                 e.preventDefault();
                 self.handleImportClick($(this));
             });
-
-            // Globale Funktionen für die `onclick`-Attribute im HTML verfügbar machen.
-            window.csvImportTestConfig = () => self.testConfiguration();
-            window.csvImportValidateCSV = (type) => self.validateCSV(type);
         },
 
-        /**
-         * Liest den initialen Status aus den von PHP übergebenen Daten.
-         */
         initializeStatus: function() {
             this.status.importRunning = csvImportAjax.import_running || false;
             this.updateUIState();
@@ -80,9 +56,6 @@
             }
         },
 
-        /**
-         * Eine zentrale Funktion für alle AJAX-Anfragen an den Server.
-         */
         performAjaxRequest: function(data) {
             return $.ajax({
                 url: csvImportAjax.ajaxurl,
@@ -93,9 +66,6 @@
             });
         },
 
-        /**
-         * Startet den Test der Plugin-Konfiguration.
-         */
         testConfiguration: function() {
             if (this.status.validationInProgress) return;
             this.status.validationInProgress = true;
@@ -105,9 +75,6 @@
                 .always(() => { this.status.validationInProgress = false; });
         },
 
-        /**
-         * Startet die Validierung einer CSV-Datei (lokal oder Dropbox).
-         */
         validateCSV: function(type) {
             if (this.status.validationInProgress) return;
             this.status.validationInProgress = true;
@@ -118,9 +85,6 @@
                 .always(() => { this.status.validationInProgress = false; });
         },
 
-        /**
-         * Verarbeitet das Ergebnis der Validierung und zeigt es an.
-         */
         handleValidationResult: function(response, type) {
             const data = response.data || {};
             this.showTestResult(data.message || 'Ein unbekannter Fehler ist aufgetreten.', response.success);
@@ -128,8 +92,6 @@
             if (response.success && data.columns && data.sample_data) {
                 this.showSampleData(data.columns, data.sample_data);
                 this.showColumnMappingUI(data.columns);
-                
-                // SEO Vorschau mit den neuen Daten aktualisieren
                 if (window.CSVSEOPreview && data.sample_data[0]) {
                     const sample_row = data.sample_data[0];
                     const columns = data.columns;
@@ -145,9 +107,6 @@
             }
         },
 
-        /**
-         * Sucht in einer CSV-Zeile nach möglichen Spaltennamen.
-         */
         getDataFromRow: function(row, columns, possibleKeys) {
             for (const key of possibleKeys) {
                 const index = columns.indexOf(key);
@@ -158,9 +117,6 @@
             return '';
         },
         
-        /**
-         * Behandelt den Klick auf einen Import-Button.
-         */
         handleImportClick: function($button) {
             const source = $button.data('source');
             const sourceName = source.charAt(0).toUpperCase() + source.slice(1);
@@ -168,9 +124,6 @@
             this.startImport(source);
         },
 
-        /**
-         * Startet den eigentlichen Importprozess.
-         */
         startImport: function(source) {
             this.status.importRunning = true;
             this.updateUIState();
@@ -199,24 +152,15 @@
             this.startProgressUpdates();
         },
 
-        /**
-         * Aktualisiert die Benutzeroberfläche (z.B. Deaktivieren der Buttons).
-         */
         updateUIState: function() {
             this.elements.importButtons.prop('disabled', this.status.importRunning);
         },
         
-        /**
-         * Startet die regelmäßige Abfrage des Import-Fortschritts.
-         */
         startProgressUpdates: function() {
             if (this.status.progressInterval) clearInterval(this.status.progressInterval);
             this.status.progressInterval = setInterval(() => this.updateProgress(), 5000);
         },
         
-        /**
-         * Fragt den Fortschritt vom Server ab und aktualisiert die Fortschrittsanzeige.
-         */
         updateProgress: function() {
             this.performAjaxRequest({ action: 'csv_import_get_progress' })
                 .done(response => {
@@ -230,8 +174,6 @@
                 });
         },
 
-        // --- HILFSFUNKTIONEN FÜR DIE UI ---
-
         showTestProgress: function(message) {
             this.elements.resultsContainer.html(`<div class="test-result test-progress">🔄 ${message}</div>`);
         },
@@ -242,71 +184,56 @@
             this.elements.resultsContainer.html(`<div class="test-result ${resultClass}">${icon} ${message}</div>`);
         },
         
-        s/**
- * Beispieldaten anzeigen (erweitert)
- */
-showSampleData: function(columns, sampleData) {
-    if (!this.elements.sampleDataContainer.length || !columns || !sampleData) return;
+        showSampleData: function(columns, sampleData) {
+            const maxCols = 6; // Anzeige auf 6 Spalten begrenzen
+            const displayColumns = columns.slice(0, maxCols);
+            const hasMoreCols = columns.length > maxCols;
 
-    try {
-        // KORREKTUR: Maximale Anzahl der Spalten von 5 auf 6 geändert.
-        const maxCols = 5;
-        const displayColumns = columns.slice(0, maxCols);
-        const hasMoreCols = columns.length > maxCols;
-
-        let tableHtml = `
-            <div class="csv-sample-data-wrapper">
-                <div class="sample-data-header">
-                    <h4>📊 Beispieldaten</h4>
-                    <span class="sample-info">${sampleData.length} Zeilen, ${columns.length} Spalten</span>
-                </div>
-                <div class="table-responsive">
-                    <table class="wp-list-table widefat striped sample-data-table">
-                        <thead>
-                            <tr>
-                                ${displayColumns.map(col => `<th>${this.escapeHtml(col)}</th>`).join('')}
-                                ${hasMoreCols ? '<th class="more-cols">...</th>' : ''}
-                            </tr>
-                        </thead>
-                        <tbody>
-        `;
-
-        sampleData.forEach((row) => {
-            if (Array.isArray(row)) {
+            let tableHtml = `<div class="sample-data-header"><h4>📊 Beispieldaten</h4><span class="sample-info">${sampleData.length} Zeilen, ${columns.length} Spalten</span></div><table class="wp-list-table widefat striped"><thead><tr>`;
+            displayColumns.forEach(col => tableHtml += `<th>${col}</th>`);
+            if (hasMoreCols) tableHtml += `<th class="more-cols">...</th>`;
+            tableHtml += '</tr></thead><tbody>';
+            sampleData.forEach(row => {
+                tableHtml += '<tr>';
                 const displayRow = row.slice(0, maxCols);
-                tableHtml += `
-                    <tr>
-                        ${displayRow.map(cell => `<td>${this.escapeHtml(String(cell || ''))}</td>`).join('')}
-                        ${hasMoreCols ? '<td class="more-cols">...</td>' : ''}
-                    </tr>
-                `;
+                displayRow.forEach(cell => {
+                     tableHtml += `<td>${cell || ''}</td>`;
+                });
+                if (hasMoreCols) tableHtml += `<td class="more-cols">...</td>`;
+                tableHtml += '</tr>';
+            });
+            tableHtml += '</tbody></table>';
+            if (hasMoreCols) {
+                tableHtml += `<p class="description">Zeige ${maxCols} von ${columns.length} Spalten zur Vorschau.</p>`;
             }
-        });
+            this.elements.sampleDataContainer.html(tableHtml);
+        },
 
-        tableHtml += `
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        `;
-
-        if (hasMoreCols) {
-            tableHtml += `<p class="description">Zeige ${maxCols} von ${columns.length} Spalten zur Vorschau</p>`;
+        clearSampleData: function() {
+            this.elements.sampleDataContainer.empty();
+        },
+        
+        showColumnMappingUI: function(columns) {
+            const targetFields = ['post_title', 'post_content', 'post_excerpt', 'post_name', 'featured_image'];
+            let tableHtml = '<h4>Spalten zuordnen</h4><table class="wp-list-table widefat striped"><thead><tr><th>CSV-Spalte</th><th>WordPress-Feld</th></tr></thead><tbody>';
+            columns.forEach(column => {
+                let optionsHtml = '<option value="">-- Ignorieren --</option>';
+                targetFields.forEach(field => {
+                    const isSelected = column.toLowerCase().replace(/[ -]/g, '_') === field;
+                    optionsHtml += `<option value="${field}" ${isSelected ? 'selected' : ''}>${field}</option>`;
+                });
+                tableHtml += `<tr><td><strong>${column}</strong></td><td><select name="csv_mapping[${column}]">${optionsHtml}</select></td></tr>`;
+            });
+            tableHtml += '</tbody></table>';
+            this.elements.mappingContainer.html(tableHtml).show();
         }
-
-        this.elements.sampleDataContainer.html(tableHtml);
-
-    } catch (error) {
-        this.debug.error('Fehler beim Anzeigen der Beispieldaten:', error);
-        this.elements.sampleDataContainer.html('<div class="test-result test-error">❌ Fehler beim Laden der Beispieldaten</div>');
-    }
-},
-    // ===================================================================
-    // INITIALISIERUNG, SOBALD DIE SEITE BEREIT IST
-    // ===================================================================
+    };
 
     $(document).ready(function() {
-        CSVImportAdmin.init();
+        if (typeof CSVImportAdmin !== 'undefined') {
+            CSVImportAdmin.init();
+            window.CSVImportAdmin = CSVImportAdmin;
+        }
     });
 
 })(jQuery);
