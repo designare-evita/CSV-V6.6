@@ -41,76 +41,91 @@ class CSV_Import_Pro_Admin {
 		add_action('csv_import_main_page_after_upload', [$this, 'render_seo_preview_section']);
 	}
 
-	public function register_admin_menu() {
-        // Hauptseite unter "Werkzeuge" hinzufügen
-        $main_page_hook = add_management_page(
-            __( 'CSV Import Pro', 'csv-import' ),
-            __( 'CSV Import', 'csv-import' ),
-            'edit_pages',
-            $this->menu_slug,
-            [ $this, 'display_main_page' ]
-        );
-        $this->admin_pages['main'] = $main_page_hook;
+public function register_admin_menu() {
+    // Schritt 1: Den neuen Top-Level-Menüpunkt erstellen
+    add_menu_page(
+        __( 'CSV Importer Pro', 'csv-import' ), // Seitentitel
+        __( 'CSV Importer Pro', 'csv-import' ), // Menütitel
+        'edit_pages',                           // Berechtigung
+        $this->menu_slug,                       // Menü-Slug ('csv-import')
+        [ $this, 'display_main_page' ],         // Funktion für die Hauptseite
+        'dashicons-database-import',            // Icon
+        25                                      // Position (knapp unter "Kommentare")
+    );
 
-        // Untermenüs hinzufügen
-        $submenus = [
-            'settings' => [
-                'page_title' => __( 'CSV Import Einstellungen', 'csv-import' ),
-                'menu_title' => __( 'Einstellungen', 'csv-import' ),
-                'capability' => 'edit_pages',
-                'menu_slug'  => 'csv-import-settings',
-                'callback'   => [ $this, 'display_settings_page' ]
-            ],
-            'backups' => [
-                'page_title' => __( 'CSV Import Backups', 'csv-import' ),
-                'menu_title' => __( 'Backups & Rollback', 'csv-import' ),
-                'capability' => 'edit_pages',
-                'menu_slug'  => 'csv-import-backups',
-                'callback'   => [ $this, 'display_backup_page' ]
-            ],
-            'profiles' => [
-                'page_title' => __( 'CSV Import Profile', 'csv-import' ),
-                'menu_title' => __( 'Import-Profile', 'csv-import' ),
-                'capability' => 'edit_pages',
-                'menu_slug'  => 'csv-import-profiles',
-                'callback'   => [ $this, 'display_profiles_page' ]
-            ],
-            'scheduling' => [
-                'page_title' => __( 'CSV Import Automatisierung', 'csv-import' ),
-                'menu_title' => __( 'Automatisierung', 'csv-import' ),
-                'capability' => 'manage_options', // Nur für Admins
-                'menu_slug'  => 'csv-import-scheduling',
-                'callback'   => [ $this, 'display_scheduling_page' ]
-            ],
-            'logs' => [
-                'page_title' => __( 'CSV Import Logs', 'csv-import' ),
-                'menu_title' => __( 'Logs & Monitoring', 'csv-import' ),
-                'capability' => 'edit_pages',
-                'menu_slug'  => 'csv-import-logs',
-                'callback'   => [ $this, 'display_logs_page' ]
-            ],
-            'seo_preview' => [
-                'page_title' => __( 'CSV Import SEO-Vorschau', 'csv-import' ),
-                'menu_title' => __( 'SEO-Vorschau', 'csv-import' ),
-                'capability' => 'edit_pages',
-                'menu_slug'  => 'csv-import-seo-preview',
-                'callback'   => [ $this, 'display_seo_preview_page' ]
-            ]
-        ];
+    // Schritt 2: Alle Untermenüs in der gewünschten Reihenfolge definieren
+    $submenus = [
+        'settings' => [
+            'page_title' => __( 'CSV Import Einstellungen', 'csv-import' ),
+            'menu_title' => __( 'Einstellungen', 'csv-import' ),
+            'capability' => 'edit_pages',
+            'menu_slug'  => 'csv-import-settings',
+            'callback'   => [ $this, 'display_settings_page' ]
+        ],
+        'main' => [ // Dies ist die Haupt-Dashboard-Seite
+            'page_title' => __( 'CSV Import Dashboard', 'csv-import' ),
+            'menu_title' => __( 'CSV Import', 'csv-import' ),
+            'capability' => 'edit_pages',
+            'menu_slug'  => $this->menu_slug, // Gleicher Slug wie der Parent
+            'callback'   => [ $this, 'display_main_page' ]
+        ],
+        'seo_preview' => [
+            'page_title' => __( 'CSV Import SEO-Vorschau', 'csv-import' ),
+            'menu_title' => __( 'SEO-Vorschau', 'csv-import' ),
+            'capability' => 'edit_pages',
+            'menu_slug'  => 'csv-import-seo-preview',
+            'callback'   => [ $this, 'display_seo_preview_page' ]
+        ],
+        'scheduling' => [
+            'page_title' => __( 'CSV Import Automatisierung', 'csv-import' ),
+            'menu_title' => __( 'Automatisierung', 'csv-import' ),
+            'capability' => 'manage_options',
+            'menu_slug'  => 'csv-import-scheduling',
+            'callback'   => [ $this, 'display_scheduling_page' ]
+        ],
+        'debug' => [
+            'page_title' => __( 'CSV Import Debug', 'csv-import' ),
+            'menu_title' => __( 'Debug', 'csv-import' ),
+            'capability' => 'manage_options',
+            'menu_slug'  => 'csv-import-debug',
+            'callback'   => [ $this, 'display_debug_page' ] // Annahme, dass die Funktion so heißt
+        ],
+        'backups' => [
+            'page_title' => __( 'CSV Import Backups', 'csv-import' ),
+            'menu_title' => __( 'Backups & Rollback', 'csv-import' ),
+            'capability' => 'edit_pages',
+            'menu_slug'  => 'csv-import-backups',
+            'callback'   => [ $this, 'display_backup_page' ]
+        ],
+        'profiles' => [
+            'page_title' => __( 'CSV Import Profile', 'csv-import' ),
+            'menu_title' => __( 'Import-Profile', 'csv-import' ),
+            'capability' => 'edit_pages',
+            'menu_slug'  => 'csv-import-profiles',
+            'callback'   => [ $this, 'display_profiles_page' ]
+        ],
+        'logs' => [
+            'page_title' => __( 'CSV Import Logs', 'csv-import' ),
+            'menu_title' => __( 'Logs & Monitoring', 'csv-import' ),
+            'capability' => 'edit_pages',
+            'menu_slug'  => 'csv-import-logs',
+            'callback'   => [ $this, 'display_logs_page' ]
+        ],
+        'cache' => [ // Annahme für die CSV Cache Seite
+            'page_title' => __( 'CSV Import Cache', 'csv-import' ),
+            'menu_title' => __( 'CSV Cache', 'csv-import' ),
+            'capability' => 'manage_options',
+            'menu_slug'  => 'csv-import-cache',
+            'callback'   => [ $this, 'display_cache_page' ] // Annahme, dass die Funktion so heißt
+        ],
+    ];
 
-        // Das erste Untermenü muss der Hauptseite entsprechen, aber wir verstecken es nicht
-        add_submenu_page(
-            'tools.php',
-            __( 'CSV Import Dashboard', 'csv-import' ),
-            __( 'Import Dashboard', 'csv-import' ),
-            'edit_pages',
-            $this->menu_slug,
-            [ $this, 'display_main_page' ]
-        );
-
-        foreach ( $submenus as $key => $submenu ) {
+    // Schritt 3: Die Untermenüs erstellen
+    foreach ( $submenus as $key => $submenu ) {
+        // Wir müssen sicherstellen, dass die Callback-Funktion existiert, bevor wir sie hinzufügen
+        if (is_callable($submenu['callback'])) {
             $submenu_hook = add_submenu_page(
-                'tools.php', // Alle unter "Werkzeuge"
+                $this->menu_slug, // Parent-Slug
                 $submenu['page_title'],
                 $submenu['menu_title'],
                 $submenu['capability'],
@@ -119,7 +134,8 @@ class CSV_Import_Pro_Admin {
             );
             $this->admin_pages[$key] = $submenu_hook;
         }
-	}
+    }
+}
 
     public function display_main_page() { $this->render_page('page-main.php'); }
     public function display_settings_page() { $this->render_page('page-settings.php'); }
