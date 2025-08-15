@@ -30,89 +30,86 @@
     50% { opacity: 0.7; }
 }
 
-/* ⭐ KORRIGIERT: Verbesserte Tab-Navigation */
+/* Tab Navigation */
 .seo-engine-tabs, .seo-device-tabs {
     display: flex;
-    gap: 5px;
+    gap: 8px;
     margin-bottom: 15px;
     flex-wrap: wrap;
 }
 
 .seo-tab, .device-tab {
-    padding: 10px 16px; /* Größere Touch-Targets */
-    border: 1px solid #c3c4c7;
+    padding: 12px 18px;
+    border: 2px solid #c3c4c7;
     background: white;
     cursor: pointer;
-    font-size: 12px;
-    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 8px;
     transition: all 0.2s ease;
     user-select: none;
-    min-width: 50px;
-    min-height: 44px; /* Accessibility */
+    min-width: 60px;
+    min-height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-/* ⭐ KORRIGIERT: Bessere Button States */
-.device-tab:hover {
+/* Hover States */
+.device-tab:hover, .seo-tab:hover {
     background: #f0f0f1;
     border-color: #8c8f94;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
-.device-tab.active {
+/* Active States */
+.device-tab.active, .seo-tab.active {
     background: #2271b1;
     color: white;
     border-color: #2271b1;
-    box-shadow: 0 3px 6px rgba(34, 113, 177, 0.3);
+    box-shadow: 0 4px 12px rgba(34, 113, 177, 0.3);
+    transform: translateY(-1px);
 }
 
-.device-tab.clicked {
-    transform: scale(0.95);
-    transition: transform 0.1s ease;
-}
-
-/* ⭐ KORRIGIERT: Device-spezifische Button-Farben */
+/* Device-spezifische Farben */
 .device-tab[data-device="mobile"] {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    border: none;
+    border: 2px solid #667eea;
 }
 
 .device-tab[data-device="mobile"]:hover {
     background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+    border-color: #5a6fd8;
 }
 
 .device-tab[data-device="mobile"].active {
     background: linear-gradient(135deg, #4e5bc6 0%, #5e377e 100%);
-    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
+    border-color: #4e5bc6;
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
 }
 
 .device-tab[data-device="desktop"] {
     background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
     color: white;
-    border: none;
+    border: 2px solid #11998e;
 }
 
 .device-tab[data-device="desktop"]:hover {
     background: linear-gradient(135deg, #0e8077 0%, #32d96a 100%);
+    border-color: #0e8077;
 }
 
 .device-tab[data-device="desktop"].active {
     background: linear-gradient(135deg, #0b6d65 0%, #2cbf57 100%);
-    box-shadow: 0 4px 8px rgba(17, 153, 142, 0.4);
+    border-color: #0b6d65;
+    box-shadow: 0 6px 16px rgba(17, 153, 142, 0.4);
 }
 
-.seo-tab.active {
-    background: #2271b1;
-    color: white;
-    border-color: #2271b1;
-}
-
-/* ⭐ KORRIGIERT: Preview Container */
+/* Preview Container */
 .seo-preview-container {
     background: #f8f9fa;
     border: 1px solid #e1e8ed;
@@ -120,34 +117,36 @@
     padding: 15px;
     margin-bottom: 15px;
     min-height: 120px;
-    transition: all 0.3s ease;
+    transition: all 0.4s ease;
 }
 
-/* ⭐ KORRIGIERT: Mobile View mit Phone Frame */
+/* Mobile View - DEUTLICH SICHTBAR */
 .seo-preview-container.mobile-view {
     max-width: 375px;
     margin: 0 auto 15px auto;
-    border: 3px solid #667eea;
-    border-radius: 20px;
-    padding: 20px 15px;
+    border: 4px solid #667eea !important;
+    border-radius: 24px;
+    padding: 25px 20px;
     background: linear-gradient(145deg, #f8f9ff 0%, #fff 100%);
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.25);
+    box-shadow: 0 12px 24px rgba(102, 126, 234, 0.3);
     position: relative;
+    transform: scale(1.02);
 }
 
 .seo-preview-container.mobile-view::before {
-    content: "📱 Mobile Ansicht";
+    content: "📱 MOBILE ANSICHT";
     position: absolute;
-    top: -15px;
+    top: -18px;
     left: 50%;
     transform: translateX(-50%);
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    padding: 4px 12px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 600;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    padding: 6px 16px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 700;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    letter-spacing: 1px;
 }
 
 .serp-preview {
@@ -158,7 +157,7 @@
     display: block;
 }
 
-/* Google SERP Styles */
+/* Google SERP */
 .google-serp .serp-result {
     font-family: arial, sans-serif;
 }
@@ -192,7 +191,7 @@
     transition: font-size 0.3s ease;
 }
 
-/* Bing SERP Styles */
+/* Bing SERP */
 .bing-serp .serp-result {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
@@ -219,30 +218,6 @@
     font-size: 13px;
     line-height: 1.4;
     transition: font-size 0.3s ease;
-}
-
-/* ⭐ KORRIGIERT: Responsive für kleine Bildschirme */
-@media (max-width: 768px) {
-    .seo-engine-tabs, .seo-device-tabs {
-        justify-content: center;
-    }
-    
-    .device-tab, .seo-tab {
-        min-width: 80px;
-        padding: 12px 10px;
-        font-size: 11px;
-    }
-    
-    .csv-seo-preview-widget {
-        padding: 15px;
-        margin: 15px 0;
-    }
-    
-    .seo-preview-container.mobile-view {
-        max-width: calc(100% - 20px);
-        margin-left: 10px;
-        margin-right: 10px;
-    }
 }
 
 /* SEO Metrics */
@@ -324,7 +299,31 @@
     line-height: 1.4;
 }
 
-/* Focus States für Accessibility */
+/* Responsive */
+@media (max-width: 768px) {
+    .seo-engine-tabs, .seo-device-tabs {
+        justify-content: center;
+    }
+    
+    .device-tab, .seo-tab {
+        min-width: 80px;
+        padding: 14px 12px;
+        font-size: 12px;
+    }
+    
+    .csv-seo-preview-widget {
+        padding: 15px;
+        margin: 15px 0;
+    }
+    
+    .seo-preview-container.mobile-view {
+        max-width: calc(100% - 20px);
+        margin-left: 10px;
+        margin-right: 10px;
+    }
+}
+
+/* Focus States */
 .device-tab:focus,
 .seo-tab:focus {
     outline: 3px solid #005cee;
