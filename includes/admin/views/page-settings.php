@@ -316,7 +316,7 @@ $current_pb = get_option( 'csv_import_page_builder', 'gutenberg' );
 		</div>
 
 <!-- SEO Preview Integration -->
-<div class="csv-import-box settings-box" style="grid-column: 1 / -1; margin-top: 20px;">
+<div class="csv-import-box settings-box">
     <?php CSV_Import_SEO_Preview::render_preview_widget(); ?>
 </div>
 		<!-- Save Button -->
