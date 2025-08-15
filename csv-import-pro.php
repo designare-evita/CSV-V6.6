@@ -176,10 +176,12 @@ function csv_import_pro_load_plugin_files() {
         'includes/classes/class-csv-import-template-manager.php',
         'includes/classes/class-csv-import-validator.php',
         'includes/classes/class-csv-import-memory-cache.php',
+        
         // === SCHEDULER (nach allen Dependencies) ===
         'includes/classes/class-csv-import-scheduler.php', // Benötigt core-functions.php + Error Handler
         
         // === ADMIN-BEREICH (nur wenn im Admin) ===
+        'includes/admin/class-seo-preview.php',           // *** HIER IST DIE KORREKTUR: Fehlende SEO-Klasse hinzugefügt ***
         'includes/admin/class-admin-menus.php',           // Benötigt alle anderen Klassen
         'includes/admin/admin-ajax.php',                  // AJAX-Handler
     ];
