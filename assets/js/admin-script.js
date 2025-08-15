@@ -8,6 +8,9 @@
 // GLOBALE FUNKTIONEN (vor document ready!)
 // ===================================================================
 
+(function($) {
+    'use strict';
+
 window.csvImportTestConfig = function() {
     if (typeof window.CSVImportAdmin !== 'undefined' && window.CSVImportAdmin.testConfiguration) {
         window.CSVImportAdmin.testConfiguration();
@@ -2668,3 +2671,6 @@ if (window.CSVImportAdmin && window.CSVImportAdmin.debug.enabled) {
     console.log('• Version:', window.CSVImportAdmin.version);
     console.groupEnd();
 }
+
+})(jQuery);
+
