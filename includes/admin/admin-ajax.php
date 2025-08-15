@@ -66,14 +66,17 @@ function csv_import_validate_handler() {
         }
 
         $config = csv_import_get_config();
-        $response_data = [];
+        $response_data = []; // Variable initialisieren
 
         if ( $type === 'config' ) {
             if (!function_exists('csv_import_validate_config')) {
                 throw new Exception('Validierungsfunktion (csv_import_validate_config) nicht gefunden.');
             }
             $validation = csv_import_validate_config( $config );
-            $response_data = $validation;
+            
+            // KORREKTUR: Das Ergebnis der Validierung der korrekten Variable zuweisen.
+            $response_data = $validation; 
+            
             if (!$validation['valid']) {
                 $response_data['message'] = 'Konfigurationsfehler: <ul><li>' . implode('</li><li>', $validation['errors']) . '</li></ul>';
             } else {
