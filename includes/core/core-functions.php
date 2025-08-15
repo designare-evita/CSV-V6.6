@@ -523,54 +523,88 @@ function csv_import_validate_local_source( array $config ): array {
 /**
  * Analysiert CSV-Inhalt und gibt Validierungsergebnis zurück
  */
-/**
- * Analysiert CSV-Inhalt und gibt Validierungsergebnis zurück
- */
+
 function csv_import_analyze_csv_content( string $csv_content, string $source_name ): array {
     if ( empty( trim( $csv_content ) ) ) {
         throw new Exception( 'CSV-Datei ist leer' );
     }
+
+    // Zeilenumbrüche normalisieren, um die Verarbeitung zu vereinheitlichen
     $csv_content = str_replace( [ "\r\n", "\r" ], "\n", $csv_content );
     $delimiters = [',', ';', "\t", '|'];
     $best_result = null;
     $max_columns = 0;
-    foreach ( $delimiters as $delimiter ) {
+
+    // Bestes Trennzeichen durch Zählen der Spalten in der ersten Zeile ermitteln
+    foreach ( $delimiters as $delimiter_char ) {
         $lines = explode("\n", $csv_content);
         if ( ! empty( $lines ) ) {
-            $actual_delimiter = $delimiter === '\t' ? "\t" : $delimiter;
+            $actual_delimiter = $delimiter_char === '\t' ? "\t" : $delimiter_char;
             $headers = str_getcsv( $lines[0], $actual_delimiter );
+            
             if ( count( $headers ) > $max_columns ) {
                 $max_columns = count( $headers );
-                $best_result = [ 'lines' => $lines, 'headers' => $headers, 'delimiter' => $actual_delimiter ];
+                $best_result = [
+                    'lines' => $lines,
+                    'headers' => $headers,
+                    'delimiter' => $delimiter_char, // 'human-readable' delimiter for messages
+                    'actual_delimiter' => $actual_delimiter // actual character for parsing
+                ];
             }
         }
     }
-    if ( ! $best_result ) {
-        throw new Exception( 'Keine gültigen CSV-Daten gefunden.' );
+
+    if ( ! $best_result || $max_columns < 2 ) {
+        throw new Exception( 'Keine gültigen CSV-Daten gefunden. Stellen Sie sicher, dass die Datei korrekt formatiert ist und ein gängiges Trennzeichen (Komma, Semikolon, Tab) verwendet wird.' );
     }
+
     $lines = $best_result['lines'];
-    $headers = array_map('trim', $best_result['headers']);
+    $headers = $best_result['headers'];
     $delimiter = $best_result['delimiter'];
-    if ( empty(array_filter($headers)) ) {
-        throw new Exception( 'Keine gültigen Spalten-Header gefunden.' );
+    $actual_delimiter = $best_result['actual_delimiter'];
+
+    // Header bereinigen (Leerzeichen entfernen und leere Spalten herausfiltern)
+    $headers = array_map( 'trim', $headers );
+    $headers = array_filter( $headers );
+
+    if ( empty( $headers ) ) {
+        throw new Exception( 'Keine gültigen Spalten-Header in der CSV-Datei gefunden.' );
     }
+
+    // Beispieldaten für die Vorschau im Admin-Bereich sammeln (erste 3 Zeilen)
     $sample_data = [];
-    $data_lines = array_slice($lines, 1);
-    $non_empty_rows = count(array_filter($data_lines, 'trim'));
+    $data_lines = array_slice($lines, 1); // Header-Zeile überspringen
+
     foreach ( array_slice($data_lines, 0, 3) as $line ) {
         if ( ! empty( trim( $line ) ) ) {
-            $sample_data[] = array_slice(str_getcsv($line, $delimiter), 0, 6); // Limitiert auf 6 Spalten
+            $row_data = str_getcsv( $line, $actual_delimiter );
+            // Nur so viele Spalten anzeigen, wie es Header gibt, und auf 6 begrenzen
+            $sample_data[] = array_slice( $row_data, 0, min( 6, count( $headers ) ) );
         }
     }
+
+    // Anzahl der Zeilen mit Inhalt ermitteln
+    $non_empty_rows = count(array_filter($data_lines, 'trim'));
+    $total_rows = count($lines) -1; // Header abziehen
+
+    // Erfolgsmeldung für das Admin-Interface zusammenstellen
     $message = "✅ {$source_name} CSV erfolgreich validiert!<br>" .
+               "<strong>Gesamtzeilen:</strong> {$total_rows}<br>" .
                "<strong>Datenzeilen:</strong> {$non_empty_rows}<br>" .
-               "<strong>Spalten:</strong> " . count( $headers );
+               "<strong>Spalten:</strong> " . count( $headers ) . "<br>" .
+               "<strong>Erkanntes Trennzeichen:</strong> " . ($delimiter === '\t' ? 'Tabulator' : "'{$delimiter}'") . "<br>" .
+               "<strong>Header-Vorschau:</strong> " . implode( ', ', array_slice( $headers, 0, 5 ) ) .
+               ( count( $headers ) > 5 ? ' ... (und ' . (count( $headers ) - 5) . ' weitere)' : '' );
+
+    // Ergebnis-Array zurückgeben
     return [
         'valid' => true,
         'message' => $message,
         'rows' => $non_empty_rows,
+        'total_rows' => $total_rows,
         'columns' => $headers,
-        'sample_data' => $sample_data
+        'sample_data' => $sample_data,
+        'delimiter' => $delimiter
     ];
 }
 
