@@ -209,14 +209,14 @@ class CSV_Import_SEO_Preview {
             </h3>
             
             <div class="seo-engine-tabs">
-                <button class="seo-tab active" data-engine="google">Google</button>
-                <button class="seo-tab" data-engine="bing">Bing</button>
-            </div>
+    <button type="button" class="seo-tab active" data-engine="google">Google</button>
+    <button type="button" class="seo-tab" data-engine="bing">Bing</button>
+</div>
             
             <div class="seo-device-tabs">
-                <button class="device-tab active" data-device="desktop">🖥️ Desktop</button>
-                <button class="device-tab" data-device="mobile">📱 Mobile</button>
-            </div>
+    <button type="button" class="device-tab active" data-device="desktop">🖥️ Desktop</button>
+    <button type="button" class="device-tab" data-device="mobile">📱 Mobile</button>
+</div>
             
             <div class="seo-preview-container">
                 <!-- Google SERP Preview -->
