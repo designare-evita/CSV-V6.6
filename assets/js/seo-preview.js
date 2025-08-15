@@ -83,11 +83,36 @@ jQuery(document).ready(function($) {
                     console.log('📱 Wechsel zu Mobile View');
                     $container.addClass('mobile-view');
                     $container.css('border', '3px solid #ff6b6b'); // Debug-Border
-                } else {
-                    console.log('🖥️ Wechsel zu Desktop View');
-                    $container.removeClass('mobile-view');
-                    $container.css('border', '1px solid #e1e8ed'); // Standard-Border
-                }
+      } else {
+    console.log('🖥️ Switching to desktop view');
+    $container.removeClass('mobile-view');
+    
+    // KRITISCHER FIX: Desktop Container explizit sichtbar machen
+    $container.css({
+        'display': 'block',
+        'visibility': 'visible',
+        'max-width': '100%',
+        'margin': '0 0 15px 0',
+        'border': '1px solid #e1e8ed',
+        'border-radius': '6px',
+        'padding': '15px',
+        'background': '#f8f9fa',
+        'box-shadow': 'none',
+        'position': 'static'
+    });
+    
+    // Desktop-spezifische Anpassungen
+    $('.google-serp .serp-title').css('font-size', '20px');
+    $('.google-serp .serp-description').css('font-size', '14px');
+    $('.google-serp .serp-url').css('font-size', '14px');
+    
+    $('.bing-serp .serp-title').css('font-size', '18px');
+    $('.bing-serp .serp-description').css('font-size', '13px');
+    $('.bing-serp .serp-url').css('font-size', '13px');
+}
+
+// WICHTIG: Sicherstellen dass aktive SERP sichtbar bleibt
+$('.serp-preview.active').show();
                 
                 // Font-Größen anpassen
                 this.updateFontSizes(device);
