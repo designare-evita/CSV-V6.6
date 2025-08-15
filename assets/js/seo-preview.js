@@ -4,7 +4,7 @@ jQuery(document).ready(function($) {
     const SEOPreview = {
         init: function() {
             this.bindEvents();
-            this.updatePreview();
+            this.updatePreview(); // Initial preview with placeholder data
         },
         
         bindEvents: function() {
@@ -31,18 +31,16 @@ jQuery(document).ready(function($) {
                 }
             });
             
-            // Live-Update bei CSV-Änderungen
-            $(document).on('input change', '[name*="seo_title"], [name*="post_title"], [name*="seo_description"]', 
+            // Live-Update, wenn der Benutzer in die SEO-Felder tippt
+            $(document).on('input change', '#seo_title, #seo_description', 
                 this.debounce(this.updatePreview, 300)
             );
-            
-            // Bei Mapping-Änderungen auch updaten
-            $(document).on('change', '#csv-column-mapping-container select', this.updatePreview);
         },
         
-        updatePreview: function() {
-            const title = SEOPreview.getCurrentTitle();
-            const description = SEOPreview.getCurrentDescription();
+        // KORRIGIERTE FUNKTION: Akzeptiert jetzt ein 'data' Objekt
+        updatePreview: function(data) {
+            const title = (data && data.seo_title) ? data.seo_title : SEOPreview.getCurrentTitle();
+            const description = (data && data.seo_description) ? data.seo_description : SEOPreview.getCurrentDescription();
             const slug = SEOPreview.generateSlug(title);
             
             // UI aktualisieren
@@ -53,23 +51,16 @@ jQuery(document).ready(function($) {
         },
         
         getCurrentTitle: function() {
-            // Verschiedene Quellen für den Titel prüfen
-            let title = $('[name="seo_title"]').val() || 
-                       $('[data-field="seo_title"]').text() ||
-                       $('[name="post_title"]').val() ||
-                       $('[data-field="post_title"]').text() ||
-                       'Beispiel Seitentitel';
-            return title.trim();
+            // Liest Daten direkt aus den Feldern auf der SEO-Seite
+            return ($('#seo_title').val() || 'Beispiel Seitentitel').trim();
         },
         
         getCurrentDescription: function() {
-            let description = $('[name="seo_description"]').val() || 
-                            $('[data-field="seo_description"]').text() ||
-                            'Beispiel Meta-Description für bessere Suchergebnisse.';
-            return description.trim();
+            return ($('#seo_description').val() || 'Beispiel Meta-Description für bessere Suchergebnisse.').trim();
         },
         
         generateSlug: function(title) {
+            if (!title) return 'beispiel-seite';
             return title.toLowerCase()
                        .replace(/[^a-z0-9\s-]/g, '')
                        .replace(/\s+/g, '-')
@@ -78,7 +69,7 @@ jQuery(document).ready(function($) {
         },
         
         updateSERPDisplay: function(title, description, slug) {
-            const domain = csvSeoPreview.domain;
+            const domain = csvSeoPreview.domain || 'example.com';
             const displayUrl = domain + '/' + slug;
             
             // Google Preview Update
@@ -160,7 +151,7 @@ jQuery(document).ready(function($) {
             const container = $('#seo-recommendations');
             container.empty();
             
-            if (recommendations.length === 0) {
+            if (!recommendations || recommendations.length === 0) {
                 container.html('<div class="seo-recommendation"><span class="recommendation-icon good">✅</span><span class="recommendation-text">Alle SEO-Kriterien erfüllt!</span></div>');
                 return;
             }
@@ -206,6 +197,6 @@ jQuery(document).ready(function($) {
     // Initialisierung
     SEOPreview.init();
     
-    // Global verfügbar machen für andere Scripts
+    // Global verfügbar machen, damit andere Skripte darauf zugreifen können
     window.CSVSEOPreview = SEOPreview;
 });
