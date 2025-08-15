@@ -13,6 +13,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<p>Importieren Sie Ihre Landingpage-Daten in 4 einfachen Schritten</p>
 	</div>
 
+<div id="csv-import-success-message" class="csv-import-box" style="display: none; margin-bottom: 20px; border-left: 4px solid #00a32a;">
+    <h3>
+        <span class="step-icon" style="font-size: 28px;">✅</span>
+        Import erfolgreich abgeschlossen!
+    </h3>
+    <p>Ihre Daten wurden erfolgreich importiert. Hier ist eine Zusammenfassung:</p>
+    <ul class="status-list">
+        <li><strong>Erstellte Seiten:</strong> <span id="success-count" style="color: #00a32a; font-weight: bold;">0</span></li>
+        <li><strong>Quelle:</strong> <span id="success-source">Unbekannt</span></li>
+    </ul>
+    <p>Sie können nun einen weiteren Import starten oder Ihre importierten Seiten überprüfen.</p>
+</div>
+
 	<?php if ( isset( $_GET['result'] ) && isset( $_GET['message'] ) ) : ?>
 		<div class="notice notice-<?php echo $_GET['result'] === 'success' ? 'success' : 'error'; ?> is-dismissible">
 			<p><?php echo esc_html( urldecode( $_GET['message'] ) ); ?></p>
