@@ -608,64 +608,6 @@ function csv_import_analyze_csv_content( string $csv_content, string $source_nam
     ];
 }
 
-    if ( ! $best_result || $max_columns < 2 ) {
-        throw new Exception( 'Keine gültigen CSV-Daten gefunden. Stellen Sie sicher, dass die Datei korrekt formatiert ist.' );
-    }
-
-    $lines = $best_result['lines'];
-    $headers = $best_result['headers'];
-    $delimiter = $best_result['delimiter'];
-    $actual_delimiter = $best_result['actual_delimiter'];
-
-    // Header bereinigen
-    $headers = array_map( 'trim', $headers );
-    $headers = array_filter( $headers ); // Leere Header entfernen
-
-    if ( empty( $headers ) ) {
-        throw new Exception( 'Keine gültigen Spalten-Header gefunden' );
-    }
-
-    // Beispieldaten sammeln (erste 3 Datenzeilen)
-    $sample_data = [];
-    for ( $i = 1; $i <= min( 4, count( $lines ) - 1 ); $i++ ) {
-        if ( ! empty( trim( $lines[ $i ] ) ) ) {
-            $row_data = str_getcsv( $lines[ $i ], $actual_delimiter );
-            $row_data = array_map( 'trim', $row_data );
-            // KORREKTUR: Limit von 5 auf 6 Spalten erhöht
-            $sample_data[] = array_slice( $row_data, 0, min( 6, count( $headers ) ) ); 
-        }
-    }
-
-    $total_rows = count( $lines ) - 1; // Minus Header-Zeile
-    $non_empty_rows = 0;
-    for ( $i = 1; $i < count( $lines ); $i++ ) {
-        if ( ! empty( trim( $lines[ $i ] ) ) ) {
-            $non_empty_rows++;
-        }
-    }
-
-    // KORREKTUR: Anzeige-Limit in der Nachricht von 5 auf 6 Spalten erhöht
-    $message = "✅ {$source_name} CSV erfolgreich validiert!<br>" .
-               "<strong>Gesamtzeilen:</strong> {$total_rows}<br>" .
-               "<strong>Datenzeilen:</strong> {$non_empty_rows}<br>" .
-               "<strong>Spalten:</strong> " . count( $headers ) . "<br>" .
-               "<strong>Delimiter:</strong> " . ($delimiter === '\t' ? 'Tab' : $delimiter) . "<br>" .
-               "<strong>Header:</strong> " . implode( ', ', array_slice( $headers, 0, 5 ) ) . 
-               ( count( $headers ) > 5 ? ' ... (und ' . (count( $headers ) - 5) . ' weitere)' : '' );
-
-    $result = [
-        'valid' => true,
-        'message' => $message,
-        'rows' => $non_empty_rows,
-        'total_rows' => $total_rows,
-        'columns' => $headers,
-        'sample_data' => $sample_data,
-        'delimiter' => $delimiter
-    ];
-
-    return $result;
-}
-
 // ===================================================================
 // CSV VERARBEITUNGSFUNKTIONEN
 // ===================================================================
