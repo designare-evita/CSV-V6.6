@@ -7,13 +7,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$current_pb = get_option( 'csv_import_page_builder', 'gutenberg' ); 
-?>
-<div class="wrap">
-    <div class="csv-dashboard-header">
-        <h1>⚙️ CSV Import Einstellungen</h1>
-        <p>Konfigurieren Sie alle Aspekte des CSV-Imports für optimale Ergebnisse</p>
-    </div>
 ?>
 <div class="wrap">
 	<div class="csv-dashboard-header">
