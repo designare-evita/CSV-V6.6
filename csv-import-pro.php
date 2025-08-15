@@ -1086,7 +1086,7 @@ if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
     error_log( 'CSV Import Pro v' . CSV_IMPORT_PRO_VERSION . ' - Haupt-Plugin-Datei vollständig geladen (korrigierte Version 8.5)' );
 }
 
-
+/*
 // Debug-Admin-Seite hinzufügen
 add_action('admin_menu', function() {
     add_submenu_page(
@@ -1098,7 +1098,7 @@ add_action('admin_menu', function() {
         'csv_import_debug_page'
     );
 });
-
+*/
 function csv_import_debug_page() {
     global $wpdb;
 
