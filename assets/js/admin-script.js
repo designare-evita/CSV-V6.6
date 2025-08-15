@@ -242,41 +242,65 @@
             this.elements.resultsContainer.html(`<div class="test-result ${resultClass}">${icon} ${message}</div>`);
         },
         
-        showSampleData: function(columns, sampleData) {
-            let tableHtml = '<table class="wp-list-table widefat striped"><thead><tr>';
-            columns.forEach(col => tableHtml += `<th>${col}</th>`);
-            tableHtml += '</tr></thead><tbody>';
-            sampleData.forEach(row => {
-                tableHtml += '<tr>';
-                row.forEach(cell => {
-                     tableHtml += `<td>${cell || ''}</td>`;
-                });
-                tableHtml += '</tr>';
-            });
-            tableHtml += '</tbody></table>';
-            this.elements.sampleDataContainer.html(tableHtml);
-        },
+        s/**
+ * Beispieldaten anzeigen (erweitert)
+ */
+showSampleData: function(columns, sampleData) {
+    if (!this.elements.sampleDataContainer.length || !columns || !sampleData) return;
 
-        clearSampleData: function() {
-            this.elements.sampleDataContainer.empty();
-        },
-        
-        showColumnMappingUI: function(columns) {
-            const targetFields = ['post_title', 'post_content', 'post_excerpt', 'post_name', 'featured_image'];
-            let tableHtml = '<h4>Spalten zuordnen</h4><table class="wp-list-table widefat striped"><thead><tr><th>CSV-Spalte</th><th>WordPress-Feld</th></tr></thead><tbody>';
-            columns.forEach(column => {
-                let optionsHtml = '<option value="">-- Ignorieren --</option>';
-                targetFields.forEach(field => {
-                    const isSelected = column.toLowerCase().replace(/[ -]/g, '_') === field;
-                    optionsHtml += `<option value="${field}" ${isSelected ? 'selected' : ''}>${field}</option>`;
-                });
-                tableHtml += `<tr><td><strong>${column}</strong></td><td><select name="csv_mapping[${column}]">${optionsHtml}</select></td></tr>`;
-            });
-            tableHtml += '</tbody></table>';
-            this.elements.mappingContainer.html(tableHtml).show();
-        },
-    };
+    try {
+        // KORREKTUR: Maximale Anzahl der Spalten von 5 auf 6 geändert.
+        const maxCols = 5;
+        const displayColumns = columns.slice(0, maxCols);
+        const hasMoreCols = columns.length > maxCols;
 
+        let tableHtml = `
+            <div class="csv-sample-data-wrapper">
+                <div class="sample-data-header">
+                    <h4>📊 Beispieldaten</h4>
+                    <span class="sample-info">${sampleData.length} Zeilen, ${columns.length} Spalten</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="wp-list-table widefat striped sample-data-table">
+                        <thead>
+                            <tr>
+                                ${displayColumns.map(col => `<th>${this.escapeHtml(col)}</th>`).join('')}
+                                ${hasMoreCols ? '<th class="more-cols">...</th>' : ''}
+                            </tr>
+                        </thead>
+                        <tbody>
+        `;
+
+        sampleData.forEach((row) => {
+            if (Array.isArray(row)) {
+                const displayRow = row.slice(0, maxCols);
+                tableHtml += `
+                    <tr>
+                        ${displayRow.map(cell => `<td>${this.escapeHtml(String(cell || ''))}</td>`).join('')}
+                        ${hasMoreCols ? '<td class="more-cols">...</td>' : ''}
+                    </tr>
+                `;
+            }
+        });
+
+        tableHtml += `
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+
+        if (hasMoreCols) {
+            tableHtml += `<p class="description">Zeige ${maxCols} von ${columns.length} Spalten zur Vorschau</p>`;
+        }
+
+        this.elements.sampleDataContainer.html(tableHtml);
+
+    } catch (error) {
+        this.debug.error('Fehler beim Anzeigen der Beispieldaten:', error);
+        this.elements.sampleDataContainer.html('<div class="test-result test-error">❌ Fehler beim Laden der Beispieldaten</div>');
+    }
+},
     // ===================================================================
     // INITIALISIERUNG, SOBALD DIE SEITE BEREIT IST
     // ===================================================================
