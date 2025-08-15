@@ -1,116 +1,147 @@
 jQuery(document).ready(function($) {
     'use strict';
     
+    console.log('🚀 SEO Preview Script gestartet');
+    
     const SEOPreview = {
-        currentDevice: 'desktop', // Track current device state
+        currentDevice: 'desktop',
+        isInitialized: false,
         
         init: function() {
-            this.bindEvents();
-            this.updatePreview(); // Initial preview with placeholder data
-            console.log('✅ SEO Preview mit Mobile Support initialisiert');
+            // Warten bis DOM vollständig geladen ist
+            $(document).ready(() => {
+                this.checkHTMLStructure();
+                this.bindEvents();
+                this.updatePreview();
+                this.isInitialized = true;
+                console.log('✅ SEO Preview initialisiert');
+            });
+        },
+        
+        checkHTMLStructure: function() {
+            const requiredElements = [
+                '.device-tab',
+                '.seo-preview-container',
+                '.seo-tab'
+            ];
+            
+            requiredElements.forEach(selector => {
+                const $element = $(selector);
+                if ($element.length === 0) {
+                    console.error(`❌ Element fehlt: ${selector}`);
+                } else {
+                    console.log(`✅ Element gefunden: ${selector} (${$element.length})`);
+                }
+            });
         },
         
         bindEvents: function() {
-            // Tab-Wechsel für Suchmaschinen
-            $(document).on('click', '.seo-tab', function(e) {
+            // Alle bestehenden Events entfernen um Duplikate zu vermeiden
+            $(document).off('click.seopreview');
+            
+            // Suchmaschinen-Tabs
+            $(document).on('click.seopreview', '.seo-tab', (e) => {
                 e.preventDefault();
-                $('.seo-tab').removeClass('active');
-                $(this).addClass('active');
+                console.log('🔍 Search engine tab clicked');
                 
-                const engine = $(this).data('engine');
+                const $tab = $(e.currentTarget);
+                $('.seo-tab').removeClass('active');
+                $tab.addClass('active');
+                
+                const engine = $tab.data('engine');
                 $('.serp-preview').removeClass('active');
-                $('.' + engine + '-serp').addClass('active');
-                console.log('Search engine changed to:', engine);
+                $(`.${engine}-serp`).addClass('active');
             });
             
-            // ⭐ KORRIGIERT: Tab-Wechsel für Geräte - VOLLSTÄNDIG ÜBERARBEITET
-            $(document).on('click', '.device-tab', function(e) {
+            // Device-Tabs - VOLLSTÄNDIG NEU
+            $(document).on('click.seopreview', '.device-tab', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 
-                console.log('🔥 Device tab clicked!', $(this).data('device'));
+                const $tab = $(e.currentTarget);
+                const device = $tab.data('device');
                 
-                // Remove active state from all device tabs
+                console.log(`📱 Device tab clicked: ${device}`);
+                console.log('Tab element:', $tab[0]);
+                
+                // Sofortiges visuelles Feedback
+                $tab.css('background', '#ff6b6b');
+                setTimeout(() => $tab.css('background', ''), 300);
+                
+                // Active State setzen
                 $('.device-tab').removeClass('active');
-                $(this).addClass('active');
+                $tab.addClass('active');
                 
-                // Get device type
-                const device = $(this).data('device');
-                SEOPreview.currentDevice = device;
+                // Device State speichern
+                this.currentDevice = device;
                 
-                // Visual feedback
-                $(this).addClass('clicked');
-                setTimeout(() => $(this).removeClass('clicked'), 200);
-                
+                // Container-Klasse umschalten
                 const $container = $('.seo-preview-container');
+                console.log('Container element:', $container[0]);
                 
                 if (device === 'mobile') {
-                    console.log('📱 Switching to mobile view');
+                    console.log('📱 Wechsel zu Mobile View');
                     $container.addClass('mobile-view');
-                    
-                    // Mobile-spezifische Anpassungen
-                    $('.google-serp .serp-title').css('font-size', '18px');
-                    $('.google-serp .serp-description').css('font-size', '13px');
-                    $('.google-serp .serp-url').css('font-size', '12px');
-                    
-                    $('.bing-serp .serp-title').css('font-size', '16px');
-                    $('.bing-serp .serp-description').css('font-size', '12px');
-                    $('.bing-serp .serp-url').css('font-size', '11px');
-                    
+                    $container.css('border', '3px solid #ff6b6b'); // Debug-Border
                 } else {
-                    console.log('🖥️ Switching to desktop view');
+                    console.log('🖥️ Wechsel zu Desktop View');
                     $container.removeClass('mobile-view');
-                    
-                    // Desktop-spezifische Anpassungen
-                    $('.google-serp .serp-title').css('font-size', '20px');
-                    $('.google-serp .serp-description').css('font-size', '14px');
-                    $('.google-serp .serp-url').css('font-size', '14px');
-                    
-                    $('.bing-serp .serp-title').css('font-size', '18px');
-                    $('.bing-serp .serp-description').css('font-size', '13px');
-                    $('.bing-serp .serp-url').css('font-size', '13px');
+                    $container.css('border', '1px solid #e1e8ed'); // Standard-Border
                 }
                 
-                // Preview mit neuem Device aktualisieren
-                SEOPreview.updatePreview();
+                // Font-Größen anpassen
+                this.updateFontSizes(device);
+                
+                // Preview aktualisieren
+                this.updatePreview();
             });
             
-            // Live-Update bei Eingabe
-            $(document).on('input change', '#seo_title, #seo_description', 
-                this.debounce(this.updatePreview, 300)
+            // Input Events
+            $(document).on('input.seopreview change.seopreview', '#seo_title, #seo_description', 
+                this.debounce(() => this.updatePreview(), 300)
             );
             
-            // Fallback für fehlende Elemente
-            setTimeout(() => {
-                if ($('.device-tab').length === 0) {
-                    console.warn('⚠️ Device tabs not found - check HTML structure');
-                }
-                if ($('.seo-preview-container').length === 0) {
-                    console.warn('⚠️ Preview container not found - check HTML structure');
-                }
-            }, 1000);
+            console.log('✅ Event listeners registriert');
+        },
+        
+        updateFontSizes: function(device) {
+            if (device === 'mobile') {
+                $('.google-serp .serp-title').css('font-size', '18px');
+                $('.google-serp .serp-description').css('font-size', '13px');
+                $('.google-serp .serp-url').css('font-size', '12px');
+                $('.bing-serp .serp-title').css('font-size', '16px');
+                $('.bing-serp .serp-description').css('font-size', '12px');
+                $('.bing-serp .serp-url').css('font-size', '11px');
+            } else {
+                $('.google-serp .serp-title').css('font-size', '20px');
+                $('.google-serp .serp-description').css('font-size', '14px');
+                $('.google-serp .serp-url').css('font-size', '14px');
+                $('.bing-serp .serp-title').css('font-size', '18px');
+                $('.bing-serp .serp-description').css('font-size', '13px');
+                $('.bing-serp .serp-url').css('font-size', '13px');
+            }
         },
         
         updatePreview: function(data) {
-            const title = (data && data.seo_title) ? data.seo_title : SEOPreview.getCurrentTitle();
-            const description = (data && data.seo_description) ? data.seo_description : SEOPreview.getCurrentDescription();
-            const slug = SEOPreview.generateSlug(title);
+            const title = (data && data.seo_title) ? data.seo_title : this.getCurrentTitle();
+            const description = (data && data.seo_description) ? data.seo_description : this.getCurrentDescription();
+            const slug = this.generateSlug(title);
             
-            // UI aktualisieren
-            SEOPreview.updateSERPDisplay(title, description, slug);
+            this.updateSERPDisplay(title, description, slug);
             
-            // AJAX-Validierung (mit Error Handling)
             if (typeof csvSeoPreview !== 'undefined') {
-                SEOPreview.validateSEO(title, description, slug);
+                this.validateSEO(title, description, slug);
             }
         },
         
         getCurrentTitle: function() {
-            return ($('#seo_title').val() || 'Beispiel Seitentitel').trim();
+            const titleValue = $('#seo_title').val() || 'Beispiel Seitentitel';
+            return titleValue.trim();
         },
         
         getCurrentDescription: function() {
-            return ($('#seo_description').val() || 'Beispiel Meta-Description für bessere Suchergebnisse.').trim();
+            const descValue = $('#seo_description').val() || 'Beispiel Meta-Description für bessere Suchergebnisse.';
+            return descValue.trim();
         },
         
         generateSlug: function(title) {
@@ -123,175 +154,98 @@ jQuery(document).ready(function($) {
         },
         
         updateSERPDisplay: function(title, description, slug) {
-            const domain = (typeof csvSeoPreview !== 'undefined' && csvSeoPreview.domain) ? csvSeoPreview.domain : 'example.com';
-            const displayUrl = domain + '/' + slug;
+            const domain = 'example.com';
+            const displayUrl = `${domain}/${slug}`;
             
-            // Device-spezifische Titel-/Description-Kürzung
             let displayTitle = title;
             let displayDesc = description;
             
-            if (SEOPreview.currentDevice === 'mobile') {
+            // Mobile-spezifische Kürzung
+            if (this.currentDevice === 'mobile') {
                 displayTitle = title.length > 55 ? title.substring(0, 55) + '...' : title;
                 displayDesc = description.length > 130 ? description.substring(0, 130) + '...' : description;
             }
             
-            // Google Preview Update
+            // Google Preview
             $('#google-title-preview').text(displayTitle);
             $('#google-desc-preview').text(displayDesc);
             $('#google-url-preview').text(displayUrl);
             
-            // Bing Preview Update
+            // Bing Preview
             $('#bing-title-preview').text(displayTitle);
             $('#bing-desc-preview').text(displayDesc);
             $('#bing-url-preview').text(displayUrl);
+            
+            console.log(`📝 SERP aktualisiert (${this.currentDevice}): ${displayTitle.length}/${displayDesc.length} Zeichen`);
         },
         
         validateSEO: function(title, description, slug) {
-            $.ajax({
-                url: csvSeoPreview.ajaxurl,
-                type: 'POST',
-                data: {
-                    action: 'csv_seo_preview_validate',
-                    nonce: csvSeoPreview.nonce,
-                    title: title,
-                    description: description,
-                    slug: slug,
-                    device: SEOPreview.currentDevice
-                },
-                success: function(response) {
-                    if (response.success) {
-                        SEOPreview.updateMetrics(response.data);
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.warn('SEO Preview: Validation failed', error);
-                }
-            });
-        },
-        
-        updateMetrics: function(data) {
-            // Device-spezifische Limits
-            const titleLimit = SEOPreview.currentDevice === 'mobile' ? 55 : 60;
-            const descLimit = SEOPreview.currentDevice === 'mobile' ? 130 : 160;
+            // Einfache Client-seitige Validierung falls AJAX nicht verfügbar
+            const titleLimit = this.currentDevice === 'mobile' ? 55 : 60;
+            const descLimit = this.currentDevice === 'mobile' ? 130 : 160;
             
-            // Titel-Länge
-            const titleLength = data.title.length;
+            const titleLength = title.length;
+            const descLength = description.length;
+            
+            // Metriken aktualisieren
             const titleStatus = titleLength <= titleLimit ? 'good' : (titleLength <= titleLimit + 10 ? 'warning' : 'bad');
+            const descStatus = descLength <= descLimit ? 'good' : (descLength <= descLimit + 20 ? 'warning' : 'bad');
+            
             $('#title-length-metric')
                 .removeClass('good warning bad')
                 .addClass(titleStatus)
-                .text(titleLength + '/' + titleLimit + ' Zeichen' + SEOPreview.getStatusIcon(titleStatus));
+                .text(`${titleLength}/${titleLimit} Zeichen`);
             
-            // Description-Länge
-            const descLength = data.description.length;
-            const descStatus = descLength <= descLimit ? 'good' : (descLength <= descLimit + 20 ? 'warning' : 'bad');
             $('#desc-length-metric')
                 .removeClass('good warning bad')
                 .addClass(descStatus)
-                .text(descLength + '/' + descLimit + ' Zeichen' + SEOPreview.getStatusIcon(descStatus));
+                .text(`${descLength}/${descLimit} Zeichen`);
             
-            // SEO-Score mit Device-Bonus
-            let score = data.seo_score || 50;
-            if (SEOPreview.currentDevice === 'mobile' && titleLength <= 55 && descLength <= 130) {
-                score += 5; // Mobile-Optimierung Bonus
-            }
-            
-            let scoreStatus = 'bad';
-            let scoreText = 'Optimierung erforderlich';
-            
-            if (score >= 80) {
-                scoreStatus = 'good';
-                scoreText = 'Ausgezeichnet 🌟';
-            } else if (score >= 60) {
-                scoreStatus = 'good';
-                scoreText = 'Gut 👍';
-            } else if (score >= 40) {
-                scoreStatus = 'warning';
-                scoreText = 'Verbesserbar ⚠️';
-            }
+            // Score berechnen
+            let score = 50;
+            if (titleLength >= 30 && titleLength <= titleLimit) score += 25;
+            if (descLength >= 120 && descLength <= descLimit) score += 25;
             
             $('#seo-score-metric')
                 .removeClass('good warning bad')
-                .addClass(scoreStatus)
-                .text(scoreText + ' (' + Math.min(100, score) + '%)');
-            
-            // Empfehlungen aktualisieren
-            SEOPreview.updateRecommendations(data.recommendations);
-        },
-        
-        updateRecommendations: function(recommendations) {
-            const container = $('#seo-recommendations');
-            container.empty();
-            
-            // Device-spezifische Empfehlungen hinzufügen
-            recommendations = recommendations || [];
-            
-            if (SEOPreview.currentDevice === 'mobile') {
-                const currentTitle = SEOPreview.getCurrentTitle();
-                const currentDesc = SEOPreview.getCurrentDescription();
-                
-                if (currentTitle.length > 55) {
-                    recommendations.unshift({
-                        type: 'warning',
-                        message: `📱 Titel zu lang für Mobile (${currentTitle.length}/55 Zeichen)`
-                    });
-                }
-                
-                if (currentDesc.length > 130) {
-                    recommendations.unshift({
-                        type: 'warning',
-                        message: `📱 Description zu lang für Mobile (${currentDesc.length}/130 Zeichen)`
-                    });
-                }
-            }
-            
-            if (recommendations.length === 0) {
-                const deviceText = SEOPreview.currentDevice === 'mobile' ? 'Mobile' : 'Desktop';
-                container.html(`<div class="seo-recommendation"><span class="recommendation-icon good">✅</span><span class="recommendation-text">Alle ${deviceText} SEO-Kriterien erfüllt!</span></div>`);
-                return;
-            }
-            
-            recommendations.forEach(function(rec) {
-                const iconMap = {
-                    'info': 'ℹ️',
-                    'warning': '⚠️',
-                    'error': '❌'
-                };
-                
-                const html = '<div class="seo-recommendation">' +
-                    '<span class="recommendation-icon ' + rec.type + '">' + iconMap[rec.type] + '</span>' +
-                    '<span class="recommendation-text">' + rec.message + '</span>' +
-                    '</div>';
-                
-                container.append(html);
-            });
-        },
-        
-        getStatusIcon: function(status) {
-            const icons = {
-                'good': ' ✓',
-                'warning': ' ⚠️',
-                'bad': ' ❌'
-            };
-            return icons[status] || '';
+                .addClass(score >= 70 ? 'good' : score >= 50 ? 'warning' : 'bad')
+                .text(`${score}% (${this.currentDevice})`);
         },
         
         debounce: function(func, wait) {
             let timeout;
-            return function() {
-                const context = this;
-                const args = arguments;
+            return function(...args) {
                 clearTimeout(timeout);
-                timeout = setTimeout(function() {
-                    func.apply(context, args);
-                }, wait);
+                timeout = setTimeout(() => func.apply(this, args), wait);
             };
         }
     };
     
+    // Debug-Buttons hinzufügen
+    window.debugSEO = function() {
+        console.log('=== SEO Preview Debug ===');
+        console.log('Initialized:', SEOPreview.isInitialized);
+        console.log('Current Device:', SEOPreview.currentDevice);
+        console.log('Device Tabs:', $('.device-tab').length);
+        console.log('Preview Container:', $('.seo-preview-container').length);
+        console.log('Has mobile-view class:', $('.seo-preview-container').hasClass('mobile-view'));
+        
+        // Force Mobile Test
+        $('.device-tab[data-device="mobile"]').trigger('click');
+    };
+    
     // Initialisierung
     SEOPreview.init();
-    
-    // Global verfügbar machen
     window.CSVSEOPreview = SEOPreview;
+    
+    console.log('✅ SEO Preview Script vollständig geladen');
+    
+    // Test nach 2 Sekunden
+    setTimeout(() => {
+        console.log('🧪 Auto-Test nach 2 Sekunden...');
+        if ($('.device-tab').length > 0) {
+            console.log('📱 Teste Mobile Button...');
+            $('.device-tab[data-device="mobile"]').trigger('click');
+        }
+    }, 2000);
 });
