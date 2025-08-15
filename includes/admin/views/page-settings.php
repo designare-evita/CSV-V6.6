@@ -15,10 +15,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 	</div>
 
 	<?php
-	if ( isset( $_GET['settings-updated'] ) ) {
-		settings_errors();
-	}
-	?>
+if ( isset( $_GET['settings-updated'] ) && $_GET['settings-updated'] ) {
+    // Zeigt die Standard-Erfolgsmeldung von WordPress an
+    settings_errors();
+
+    // Fügt unseren neuen, großen Button hinzu
+    echo '<div class="csv-import-box" style="margin-bottom: 20px; border-left: 4px solid #00a32a;">';
+    echo '<h3>Nächster Schritt</h3>';
+    echo '<p>Ihre Einstellungen wurden gespeichert. Sie können jetzt mit dem Import beginnen.</p>';
+    echo '<a href="' . esc_url( admin_url( 'tools.php?page=csv-import' ) ) . '" class="button button-primary button-large" style="background: #00a32a; border-color: #00a32a; text-shadow: none;">';
+    echo '🚀 Zum Import-Dashboard';
+    echo '</a>';
+    echo '</div>';
+}
+?>
 
 	<form method="post" action="options.php">
 		<?php
