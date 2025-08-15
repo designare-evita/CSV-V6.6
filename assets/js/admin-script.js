@@ -137,13 +137,21 @@
 
             this.performAjaxRequest({ action: 'csv_import_start', source: source, mapping: mappingData })
                 .done(response => {
-                    if (response.success) {
-                        alert(response.data.message || 'Import abgeschlossen.');
-                        window.location.reload();
-                    } else {
-                        alert('Import fehlgeschlagen: ' + (response.data.message || 'Unbekannter Fehler.'));
-                    }
-                })
+    if (response.success && response.data) {
+        // ALT: alert(response.data.message || 'Import abgeschlossen.');
+        // NEU: Zeige die formatierte Erfolgsmeldung an
+        $('#success-count').text(response.data.processed || 0);
+        $('#success-source').text(source.charAt(0).toUpperCase() + source.slice(1));
+        $('#csv-import-success-message').slideDown();
+
+        // Optional: Nach kurzer Zeit automatisch zum oberen Rand der Seite scrollen
+        $('html, body').animate({ scrollTop: 0 }, 'slow');
+
+    } else {
+        // Fehlerfall bleibt gleich
+        alert('Import fehlgeschlagen: ' + (response.data.message || 'Unbekannter Fehler.'));
+    }
+})
                 .fail(() => alert('Ein schwerwiegender Serverfehler ist beim Import aufgetreten.'))
                 .always(() => {
                     this.status.importRunning = false;
