@@ -1592,33 +1592,46 @@ window.csvImportCheckHandlers = function() {
     /**
      * Validierungsergebnis verarbeiten (erweitert für Mapping)
      */
-    CSVImportAdmin.handleValidationResult = function(response, type) {
-        if (!response) {
-            this.showTestResult('Keine Antwort vom Server erhalten', false);
-            return;
+   handleValidationResult: function(response, type) {
+    if (!response) {
+        this.showTestResult('Keine Antwort vom Server erhalten', false);
+        return;
+    }
+
+    const data = response.success ? response.data : (response.data || {});
+    const message = data.message || (response.success ? 'Validierung erfolgreich' : 'Validierung fehlgeschlagen');
+
+    // Test-Ergebnis anzeigen
+    this.showTestResult(message, response.success);
+
+    // Mapping-UI anzeigen
+    if (response.success && data.columns && type !== 'config') {
+        this.showColumnMappingUI(data.columns);
+        this.showSampleData(data.columns, data.sample_data);
+
+        // SEO Preview aktualisieren
+        if (window.CSVSEOPreview && data.sample_data && data.sample_data[0]) {
+            const sample_row = data.sample_data[0];
+            const columns = data.columns;
+            const preview_data = {
+                // Versucht, die Spalten basierend auf gängigen Namen zuzuordnen
+                seo_title: sample_row[columns.indexOf('post_title')] || sample_row[columns.indexOf('title')] || '',
+                seo_description: sample_row[columns.indexOf('post_excerpt')] || sample_row[columns.indexOf('excerpt')] || ''
+            };
+            window.CSVSEOPreview.updatePreview(preview_data);
         }
 
-        const data = response.success ? response.data : (response.data || {});
-        const message = data.message || (response.success ? 'Validierung erfolgreich' : 'Validierung fehlgeschlagen');
+    } else {
+        this.clearSampleData();
+        this.clearColumnMappingUI();
+    }
 
-        // Test-Ergebnis anzeigen
-        this.showTestResult(message, response.success);
-
-        // Mapping-UI anzeigen
-        if (response.success && data.columns && type !== 'config') {
-            this.showColumnMappingUI(data.columns);
-            this.showSampleData(data.columns, data.sample_data);
-        } else {
-            this.clearSampleData();
-            this.clearColumnMappingUI();
-        }
-
-        this.debug.log(`Validierung ${type} abgeschlossen:`, {
-            success: response.success,
-            rows: data.rows,
-            columns: data.columns ? data.columns.length : 0
-        });
-    };
+    this.debug.log(`Validierung ${type} abgeschlossen:`, {
+        success: response.success,
+        rows: data.rows,
+        columns: data.columns ? data.columns.length : 0
+    });
+},
 
     /**
      * Erstellt und zeigt die Spalten-Mapping-Tabelle an.
