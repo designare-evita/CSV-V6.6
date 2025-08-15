@@ -530,31 +530,49 @@ function csv_import_analyze_csv_content( string $csv_content, string $source_nam
     if ( empty( trim( $csv_content ) ) ) {
         throw new Exception( 'CSV-Datei ist leer' );
     }
-
-    // CSV-Inhalt normalisieren
-    $csv_content = csv_import_normalize_line_endings( $csv_content );
-
-    // CSV in Array umwandeln - verschiedene Trennzeichen probieren
-    $delimiters = [',', ';', '\t', '|'];
+    $csv_content = str_replace( [ "\r\n", "\r" ], "\n", $csv_content );
+    $delimiters = [',', ';', "\t", '|'];
     $best_result = null;
     $max_columns = 0;
-
     foreach ( $delimiters as $delimiter ) {
-        $test_lines = str_getcsv( $csv_content, "\n" );
-        if ( ! empty( $test_lines ) ) {
+        $lines = explode("\n", $csv_content);
+        if ( ! empty( $lines ) ) {
             $actual_delimiter = $delimiter === '\t' ? "\t" : $delimiter;
-            $test_headers = str_getcsv( $test_lines[0], $actual_delimiter );
-            if ( count( $test_headers ) > $max_columns ) {
-                $max_columns = count( $test_headers );
-                $best_result = [
-                    'delimiter' => $delimiter,
-                    'actual_delimiter' => $actual_delimiter,
-                    'lines' => $test_lines,
-                    'headers' => $test_headers
-                ];
+            $headers = str_getcsv( $lines[0], $actual_delimiter );
+            if ( count( $headers ) > $max_columns ) {
+                $max_columns = count( $headers );
+                $best_result = [ 'lines' => $lines, 'headers' => $headers, 'delimiter' => $actual_delimiter ];
             }
         }
     }
+    if ( ! $best_result ) {
+        throw new Exception( 'Keine gültigen CSV-Daten gefunden.' );
+    }
+    $lines = $best_result['lines'];
+    $headers = array_map('trim', $best_result['headers']);
+    $delimiter = $best_result['delimiter'];
+    if ( empty(array_filter($headers)) ) {
+        throw new Exception( 'Keine gültigen Spalten-Header gefunden.' );
+    }
+    $sample_data = [];
+    $data_lines = array_slice($lines, 1);
+    $non_empty_rows = count(array_filter($data_lines, 'trim'));
+    foreach ( array_slice($data_lines, 0, 3) as $line ) {
+        if ( ! empty( trim( $line ) ) ) {
+            $sample_data[] = array_slice(str_getcsv($line, $delimiter), 0, 6); // Limitiert auf 6 Spalten
+        }
+    }
+    $message = "✅ {$source_name} CSV erfolgreich validiert!<br>" .
+               "<strong>Datenzeilen:</strong> {$non_empty_rows}<br>" .
+               "<strong>Spalten:</strong> " . count( $headers );
+    return [
+        'valid' => true,
+        'message' => $message,
+        'rows' => $non_empty_rows,
+        'columns' => $headers,
+        'sample_data' => $sample_data
+    ];
+}
 
     if ( ! $best_result || $max_columns < 2 ) {
         throw new Exception( 'Keine gültigen CSV-Daten gefunden. Stellen Sie sicher, dass die Datei korrekt formatiert ist.' );
