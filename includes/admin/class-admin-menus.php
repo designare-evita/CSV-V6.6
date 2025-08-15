@@ -328,4 +328,4 @@ class CSV_Import_Pro_Admin {
         wp_send_json_success([ 'preview_html' => $preview_html, 'field_mapping' => $field_mapping ]);
     }
 }
-}
+
