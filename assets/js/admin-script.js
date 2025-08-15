@@ -2648,7 +2648,7 @@ window.addEventListener('unhandledrejection', function(event) {
     if (window.CSVImportAdmin && event.reason && event.reason.toString().includes('csv')) {
         window.CSVImportAdmin.debug.error('Unbehandelte Promise-Rejection:', event.reason);
     }
-});
+})(jQuery);
 
 // ===================================================================
 // FINALER STATUS & ERFOLGS-MELDUNG
@@ -2672,5 +2672,4 @@ if (window.CSVImportAdmin && window.CSVImportAdmin.debug.enabled) {
     console.groupEnd();
 }
 
-})(jQuery);
 
