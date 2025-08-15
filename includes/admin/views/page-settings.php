@@ -307,6 +307,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 		</div>
 
+<!-- SEO Preview Integration -->
+<div class="csv-import-box settings-box" style="grid-column: 1 / -1; margin-top: 20px;">
+    <?php CSV_Import_SEO_Preview::render_preview_widget(); ?>
+</div>
 		<!-- Save Button -->
 		<div class="csv-dashboard-footer">
 			<?php submit_button( '💾 Einstellungen speichern', 'primary large', 'submit', false ); ?>
